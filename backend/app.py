@@ -22,3 +22,23 @@ ma = Marshmallow(app)
 api = Api(app)
 jwt = JWTManager(app)
 CORS(app)  # Enable CORS for frontend
+
+# Import models (important for db.create_all())
+from models.role import Role
+from models.user import User
+from models.vendor import Vendor
+from models.purchase_order import PurchaseOrder  # Add this
+from models.quote import Quote
+from models.document import Document
+from models.order_assignment import OrderAssignment  # Add this
+
+# Add your endpoints
+api.add_resource(Login, '/login')
+api.add_resource(UserResource, '/users')
+api.add_resource(Dashboard, '/dashboard')
+api.add_resource(OrderResource, '/orders', '/orders/<int:id>')  # Your endpoints
+api.add_resource(OrderVendorResource, '/orders/vendor')  # Your endpoint
+api.add_resource(OrderAssignmentResource, '/order-assignments', '/order-assignments/<int:assignment_id>')  # Your endpoint
+api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
+api.add_resource(DocumentResource, '/documents')
+api.add_resource(SearchResource, '/search')
