@@ -253,4 +253,55 @@ class OrderResource(Resource):
             'has_next': pagination.has_next,
             'has_prev': pagination.has_prev
         }, 200
+    
+
+    class OrderAssignmentResource(Resource):
+    @jwt_required()
+    def post(self):
+        """Assign order to staff (Manager only)"""
+        user = User.query.get(get_jwt_identity())
+        if not user or user.role.name != 'manager':
+            return {'message': 'Only procurement managers can assign orders'}, 403
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('order_id', type=int, required=True, help='Order ID is required')
+        parser.add_argument('staff_id', type=int, required=True, help='Staff ID is required')
+        parser.add_argument('notes', type=str)
+        args = parser.parse_args()
+
+        # Validate order exists and belongs to this manager
+        order = PurchaseOrder.query.get(args['order_id'])
+        if not order or order.manager_id != user.id:
+            return {'message': 'Order not found or access denied'}, 404
+
+        # Validate staff exists and has staff role
+        staff = User.query.get(args['staff_id'])
+        if not staff or staff.role.name != 'staff':
+            return {'message': 'Invalid staff member'}, 400
+
+        # Check if assignment already exists
+        existing_assignment = OrderAssignment.query.filter_by(
+            order_id=args['order_id'], 
+            staff_id=args['staff_id']
+        ).first()
+        if existing_assignment:
+            return {'message': 'Order already assigned to this staff member'}, 400
+
+        # Create assignment
+        assignment = OrderAssignment(
+            order_id=args['order_id'],
+            staff_id=args['staff_id'],
+            notes=args['notes']
+        )
+
+        try:
+            db.session.add(assignment)
+            db.session.commit()
+            return {
+                'message': 'Order assigned successfully',
+                'assignment': assignment.to_dict()
+            }, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to assign order: {str(e)}'}, 500
 
