@@ -36,3 +36,23 @@ class OrderResource(Resource):
                 return {'message': 'Access denied'}, 403
             
             return order.to_dict(), 200
+        
+            # Get orders list with pagination
+        parser = reqparse.RequestParser()
+        parser.add_argument('page', type=int, default=1)
+        parser.add_argument('per_page', type=int, default=10)
+        parser.add_argument('status', type=str)
+        args = parser.parse_args()
+
+        # Role-based query filtering
+        if user.role.name == 'manager':
+            query = PurchaseOrder.query.filter_by(manager_id=user.id)
+        elif user.role.name == 'staff':
+            # Staff can see orders assigned to them
+            query = PurchaseOrder.query.join(OrderAssignment).filter(
+                OrderAssignment.staff_id == user.id
+            )
+        elif user.role.name == 'vendor':
+            query = PurchaseOrder.query.filter_by(vendor_id=user.id)
+        else:
+            return {'message': 'Invalid role'}, 400
