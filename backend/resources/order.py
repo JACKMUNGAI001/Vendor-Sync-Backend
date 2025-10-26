@@ -304,4 +304,42 @@ class OrderResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': f'Failed to assign order: {str(e)}'}, 500
+        
+         @jwt_required()
+    def get(self):
+        """Get order assignments"""
+        user = User.query.get(get_jwt_identity())
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('page', type=int, default=1)
+        parser.add_argument('per_page', type=int, default=10)
+        args = parser.parse_args()
+
+        if user.role.name == 'manager':
+            # Managers can see all assignments for their orders
+            query = OrderAssignment.query.join(PurchaseOrder).filter(
+                PurchaseOrder.manager_id == user.id
+            )
+        elif user.role.name == 'staff':
+            # Staff can see their own assignments
+            query = OrderAssignment.query.filter_by(staff_id=user.id)
+        else:
+            return {'message': 'Access denied'}, 403
+
+        pagination = query.order_by(OrderAssignment.assigned_at.desc()).paginate(
+            page=args['page'], 
+            per_page=args['per_page'],
+            error_out=False
+        )
+
+        return {
+            'assignments': [assignment.to_dict() for assignment in pagination.items],
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'total_assignments': pagination.total,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        }, 200
 
