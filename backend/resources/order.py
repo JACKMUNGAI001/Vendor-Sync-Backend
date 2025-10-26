@@ -343,3 +343,27 @@ class OrderResource(Resource):
             'has_prev': pagination.has_prev
         }, 200
 
+        @jwt_required()
+    def delete(self, assignment_id):
+        """Remove order assignment (Manager only)"""
+        user = User.query.get(get_jwt_identity())
+        if not user or user.role.name != 'manager':
+            return {'message': 'Only procurement managers can remove assignments'}, 403
+
+        assignment = OrderAssignment.query.get(assignment_id)
+        if not assignment:
+            return {'message': 'Assignment not found'}, 404
+
+        # Verify the order belongs to this manager
+        order = PurchaseOrder.query.get(assignment.order_id)
+        if not order or order.manager_id != user.id:
+            return {'message': 'Access denied'}, 403
+
+        try:
+            db.session.delete(assignment)
+            db.session.commit()
+            return {'message': 'Assignment removed successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to remove assignment: {str(e)}'}, 500
+
