@@ -20,3 +20,19 @@ class OrderResource(Resource):
         user = User.query.get(get_jwt_identity())
         if not user:
             return {'message': 'User not found'}, 404
+        
+        # Get single order
+        if id:
+            order = PurchaseOrder.query.get(id)
+            if not order:
+                return {'message': 'Order not found'}, 404
+            
+            # Authorization checks
+            if user.role.name == 'vendor' and order.vendor_id != user.id:
+                return {'message': 'Access denied'}, 403
+            if user.role.name == 'staff' and not any(assignment.staff_id == user.id for assignment in order.assignments):
+                return {'message': 'Access denied'}, 403
+            if user.role.name == 'manager' and order.manager_id != user.id:
+                return {'message': 'Access denied'}, 403
+            
+            return order.to_dict(), 200
