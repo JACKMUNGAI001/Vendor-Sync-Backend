@@ -1,39 +1,22 @@
-""
-Order API Resources
-
-This module contains API endpoints for managing orders and order assignments.
-"""
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from models.purchase_order import PurchaseOrder
+from models.order_assignment import OrderAssignment
+from models.user import User
+from models.vendor import Vendor
+from app import db
+from sqlalchemy import or_, and_
+from datetime import datetime
 
 class OrderResource(Resource):
-    """Resource for handling order-related operations."""
-    def get(self, order_id=None):
-        """Get order(s) information."""
-        if order_id:
-            # Return specific order
-            pass
-        else:
-            # Return all orders
-            pass
-
-    def post(self):
-        """Create a new order."""
-        pass
-
-    def put(self, order_id):
-        """Update an existing order."""
-        pass
-
-    def delete(self, order_id):
-        """Delete an order."""
-        pass
-
-class OrderAssignmentResource(Resource):
-    """Resource for handling order assignment operations."""
-    def post(self):
-        """Assign an order to a vendor."""
-        pass
-
-    def delete(self, assignment_id):
-        """Remove an order assignment."""
-        pass
+    @jwt_required()
+    def get(self, id=None):
+        """
+        Get orders - role-based access
+        - Managers: Their own orders
+        - Staff: Orders assigned to them  
+        - Vendors: Orders from them
+        """
+        user = User.query.get(get_jwt_identity())
+        if not user:
+            return {'message': 'User not found'}, 404
