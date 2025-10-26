@@ -216,3 +216,41 @@ class OrderResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': f'Failed to delete order: {str(e)}'}, 500
+            
+            class OrderVendorResource(Resource):
+    @jwt_required()
+    def get(self):
+        """Get orders for vendor (Vendor only)"""
+        user = User.query.get(get_jwt_identity())
+        if not user or user.role.name != 'vendor':
+            return {'message': 'Access denied. Vendor role required.'}, 403
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('page', type=int, default=1)
+        parser.add_argument('per_page', type=int, default=10)
+        parser.add_argument('status', type=str)
+        args = parser.parse_args()
+
+        # Query orders for this vendor
+        query = PurchaseOrder.query.filter_by(vendor_id=user.id)
+        
+        # Filter by status if provided
+        if args['status']:
+            query = query.filter_by(status=args['status'])
+
+        # Pagination
+        pagination = query.order_by(PurchaseOrder.created_at.desc()).paginate(
+            page=args['page'], 
+            per_page=args['per_page'],
+            error_out=False
+        )
+
+        return {
+            'orders': [order.to_dict() for order in pagination.items],
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'total_orders': pagination.total,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        }, 200
+
