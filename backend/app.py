@@ -42,3 +42,20 @@ api.add_resource(OrderAssignmentResource, '/order-assignments', '/order-assignme
 api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
 api.add_resource(DocumentResource, '/documents')
 api.add_resource(SearchResource, '/search')
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return {'message': 'Access token is missing'}, 401
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return {'message': 'Invalid access token'}, 401
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return {'message': 'Access token has expired'}, 401
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
