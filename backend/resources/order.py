@@ -108,3 +108,36 @@ class OrderResource(Resource):
                 delivery_date = datetime.fromisoformat(args['delivery_date'].replace('Z', '+00:00'))
             except ValueError:
                 return {'message': 'Invalid delivery date format'}, 400
+            
+
+            # Create order
+        order = PurchaseOrder(
+            manager_id=user.id,
+            vendor_id=args['vendor_id'],
+            material_list=args['material_list'],
+            status='pending',
+            delivery_date=delivery_date,
+            special_instructions=args['special_instructions']
+        )
+
+        try:
+            db.session.add(order)
+            db.session.commit()
+            return {
+                'message': 'Order created successfully',
+                'order': order.to_dict()
+            }, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to create order: {str(e)}'}, 500
+
+    @jwt_required()
+    def patch(self, id):
+        """Update order (status updates and other fields)"""
+        user = User.query.get(get_jwt_identity())
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        order = PurchaseOrder.query.get(id)
+        if not order:
+            return {'message': 'Order not found'}, 404
