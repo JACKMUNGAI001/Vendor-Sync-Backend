@@ -188,7 +188,7 @@ class OrderResource(Resource):
             return {'message': f'Failed to update order: {str(e)}'}, 500
         
 
-        @jwt_required()
+    @jwt_required()
     def delete(self, id):
         """Delete order (Manager only)"""
         user = User.query.get(get_jwt_identity())
@@ -217,7 +217,7 @@ class OrderResource(Resource):
             db.session.rollback()
             return {'message': f'Failed to delete order: {str(e)}'}, 500
             
-            class OrderVendorResource(Resource):
+class OrderVendorResource(Resource):
     @jwt_required()
     def get(self):
         """Get orders for vendor (Vendor only)"""
@@ -255,7 +255,7 @@ class OrderResource(Resource):
         }, 200
     
 
-    class OrderAssignmentResource(Resource):
+class OrderAssignmentResource(Resource):
     @jwt_required()
     def post(self):
         """Assign order to staff (Manager only)"""
@@ -305,7 +305,7 @@ class OrderResource(Resource):
             db.session.rollback()
             return {'message': f'Failed to assign order: {str(e)}'}, 500
         
-         @jwt_required()
+    @jwt_required()
     def get(self):
         """Get order assignments"""
         user = User.query.get(get_jwt_identity())
@@ -343,7 +343,7 @@ class OrderResource(Resource):
             'has_prev': pagination.has_prev
         }, 200
 
-        @jwt_required()
+    @jwt_required()
     def delete(self, assignment_id):
         """Remove order assignment (Manager only)"""
         user = User.query.get(get_jwt_identity())
