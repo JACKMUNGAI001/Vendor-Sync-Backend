@@ -186,3 +186,33 @@ class OrderResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': f'Failed to update order: {str(e)}'}, 500
+        
+
+        @jwt_required()
+    def delete(self, id):
+        """Delete order (Manager only)"""
+        user = User.query.get(get_jwt_identity())
+        if not user or user.role.name != 'manager':
+            return {'message': 'Only procurement managers can delete orders'}, 403
+
+        order = PurchaseOrder.query.get(id)
+        if not order:
+            return {'message': 'Order not found'}, 404
+
+        # Managers can only delete their own orders
+        if order.manager_id != user.id:
+            return {'message': 'Can only delete your own orders'}, 403
+
+        # Prevent deletion of orders that are already in progress
+        if order.status not in ['pending', 'cancelled']:
+            return {'message': 'Cannot delete orders that are in progress or completed'}, 400
+
+        try:
+            # Delete related assignments first
+            OrderAssignment.query.filter_by(order_id=id).delete()
+            db.session.delete(order)
+            db.session.commit()
+            return {'message': 'Order deleted successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to delete order: {str(e)}'}, 500
