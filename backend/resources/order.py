@@ -160,3 +160,29 @@ class OrderResource(Resource):
         parser.add_argument('special_instructions', type=str)
         parser.add_argument('delivery_date', type=str)
         args = parser.parse_args()
+
+        # Update fields
+        if args['status']:
+            valid_statuses = ['pending', 'ordered', 'delivered', 'inspected', 'completed', 'cancelled']
+            if args['status'] not in valid_statuses:
+                return {'message': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, 400
+            order.status = args['status']
+
+        if args['special_instructions'] is not None:
+            order.special_instructions = args['special_instructions']
+
+        if args['delivery_date']:
+            try:
+                order.delivery_date = datetime.fromisoformat(args['delivery_date'].replace('Z', '+00:00'))
+            except ValueError:
+                return {'message': 'Invalid delivery date format'}, 400
+
+        try:
+            db.session.commit()
+            return {
+                'message': 'Order updated successfully',
+                'order': order.to_dict()
+            }, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Failed to update order: {str(e)}'}, 500
