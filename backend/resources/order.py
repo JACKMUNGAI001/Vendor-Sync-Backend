@@ -90,3 +90,21 @@ class OrderResource(Resource):
         parser.add_argument('delivery_date', type=str)
         parser.add_argument('special_instructions', type=str)
         args = parser.parse_args()
+
+
+        # Validate vendor exists
+        vendor = Vendor.query.get(args['vendor_id'])
+        if not vendor:
+            return {'message': 'Vendor not found'}, 404
+
+        # Validate material_list
+        if not isinstance(args['material_list'], dict) or not args['material_list']:
+            return {'message': 'Material list must be a non-empty object'}, 400
+
+        # Parse delivery date
+        delivery_date = None
+        if args['delivery_date']:
+            try:
+                delivery_date = datetime.fromisoformat(args['delivery_date'].replace('Z', '+00:00'))
+            except ValueError:
+                return {'message': 'Invalid delivery date format'}, 400
