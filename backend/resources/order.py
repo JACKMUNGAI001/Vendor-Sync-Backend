@@ -141,3 +141,22 @@ class OrderResource(Resource):
         order = PurchaseOrder.query.get(id)
         if not order:
             return {'message': 'Order not found'}, 404
+        
+
+        # Authorization checks for status updates
+        if user.role.name == 'staff':
+            # Staff can only update status if assigned to the order
+            if not any(assignment.staff_id == user.id for assignment in order.assignments):
+                return {'message': 'Not assigned to this order'}, 403
+        elif user.role.name == 'vendor':
+            # Vendors can only update their own orders
+            if order.vendor_id != user.id:
+                return {'message': 'Access denied'}, 403
+        elif user.role.name != 'manager':
+            return {'message': 'Unauthorized'}, 403
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('status', type=str)
+        parser.add_argument('special_instructions', type=str)
+        parser.add_argument('delivery_date', type=str)
+        args = parser.parse_args()
