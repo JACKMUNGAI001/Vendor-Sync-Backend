@@ -56,3 +56,37 @@ class OrderResource(Resource):
             query = PurchaseOrder.query.filter_by(vendor_id=user.id)
         else:
             return {'message': 'Invalid role'}, 400
+        
+        # Filter by status if provided
+        if args['status']:
+            query = query.filter_by(status=args['status'])
+
+        # Pagination
+        pagination = query.order_by(PurchaseOrder.created_at.desc()).paginate(
+            page=args['page'], 
+            per_page=args['per_page'],
+            error_out=False
+        )
+
+        return {
+            'orders': [order.to_dict() for order in pagination.items],
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'total_orders': pagination.total,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        }, 200
+
+    @jwt_required()
+    def post(self):
+        """Create a new purchase order (Manager only)"""
+        user = User.query.get(get_jwt_identity())
+        if not user or user.role.name != 'manager':
+            return {'message': 'Only procurement managers can create orders'}, 403
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('material_list', type=dict, required=True, help='Material list is required')
+        parser.add_argument('vendor_id', type=int, required=True, help='Vendor ID is required')
+        parser.add_argument('delivery_date', type=str)
+        parser.add_argument('special_instructions', type=str)
+        args = parser.parse_args()
