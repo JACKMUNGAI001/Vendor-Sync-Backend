@@ -60,3 +60,18 @@ class Vendor(db.Model):
             'is_approved': self.is_approved
         }
     
+    def update_rating(self, new_rating):
+        """Update vendor rating (this would be called when new reviews come in)"""
+        # This is a simplified rating update - you might want a more complex system
+        if self.rating == 0:
+            self.rating = new_rating
+        else:
+            # Simple average for demo purposes
+            self.rating = (self.rating + new_rating) / 2
+    
+    def increment_orders(self):
+        """Increment the total orders count"""
+        self.total_orders += 1
+    
+    def __repr__(self):
+        return f'<Vendor {self.name} - {self.contact_email}>'
