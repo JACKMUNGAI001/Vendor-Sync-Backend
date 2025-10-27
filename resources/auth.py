@@ -22,10 +22,26 @@ class Login(Resource):
 class Register(Resource):
     @jwt_required()
     def post(self):
+        if User.query.get(get_jwt_identity()).role.name != 'manager':
+            return {'message': 'Unauthorized'}, 403
+
         parser = reqparse.RequestParser()
         parser.add_argument('email', required=True)
         parser.add_argument('password', required=True)
         parser.add_argument('role_id', type=int, required=True)
         args = parser.parse_args()
 
-        return {'message': 'Register endpoint setup'}, 201
+        if User.query.filter_by(email=args['email']).first():
+            return {'message': 'Email already exists'}, 400
+
+        if not Role.query.get(args['role_id']):
+            return {'message': 'Invalid role'}, 400
+
+        user = User(
+            email=args['email'],
+            password_hash=hashlib.sha256(args['password'].encode()).hexdigest(),
+            role_id=args['role_id']
+        )
+        db.session.add(user)
+        db.session.commit()
+        return {'message': 'User registered successfully'}, 201
