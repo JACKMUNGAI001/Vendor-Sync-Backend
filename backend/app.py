@@ -10,6 +10,7 @@ from resources.order import OrderResource, OrderVendorResource, OrderAssignmentR
 from resources.quote import QuoteResource
 from resources.document import DocumentResource
 from resources.search import SearchResource
+from resources.upload import UploadResource
 from config import Config
 
 app = Flask(__name__)
@@ -28,6 +29,7 @@ api.add_resource(OrderAssignmentResource, '/order-assignments')
 api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
 api.add_resource(DocumentResource, '/documents')
 api.add_resource(SearchResource, '/search')
+api.add_resource(UploadResource, '/upload')
 
 if __name__ == '__main__':
     db.create_all()
