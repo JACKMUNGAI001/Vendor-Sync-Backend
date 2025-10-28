@@ -1,6 +1,6 @@
-from app import db
-from models.user import User
-from models.purchase_order import PurchaseOrder
+from backend.app import db
+from backend.models.user import User
+from backend.models.purchase_order import PurchaseOrder
 
 class OrderAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,7 +9,6 @@ class OrderAssignment(db.Model):
     assigned_at = db.Column(db.DateTime, server_default=db.func.now())
     notes = db.Column(db.Text)
 
-    # Relationships
     order = db.relationship('PurchaseOrder', backref='assignments')
     staff = db.relationship('User', backref='assigned_orders')
     

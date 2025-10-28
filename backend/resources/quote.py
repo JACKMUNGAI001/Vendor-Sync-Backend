@@ -1,12 +1,12 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.quote import Quote
-from models.user import User
-from models.purchase_order import PurchaseOrder
-from app import db
+from backend.models.quote import Quote
+from backend.models.user import User
+from backend.models.purchase_order import PurchaseOrder
+from backend.app import db
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from config import Config
+from backend.config import Config
 
 class QuoteResource(Resource):
     @jwt_required()

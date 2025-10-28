@@ -1,6 +1,6 @@
-from app import db
-from models.user import User
-from models.purchase_order import PurchaseOrder
+from backend.app import db
+from backend.models.user import User
+from backend.models.purchase_order import PurchaseOrder
 
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)

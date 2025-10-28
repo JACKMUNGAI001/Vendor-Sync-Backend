@@ -1,10 +1,10 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.purchase_order import PurchaseOrder
-from models.order_assignment import OrderAssignment
-from models.user import User
-from models.vendor import Vendor
-from app import db
+from backend.models.purchase_order import PurchaseOrder
+from backend.models.order_assignment import OrderAssignment
+from backend.models.user import User
+from backend.models.vendor import Vendor
+from backend.app import db
 from sqlalchemy import or_, and_
 from datetime import datetime
 
