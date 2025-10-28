@@ -1,4 +1,4 @@
-from backend.app import db
+from backend import db
 from backend.models.vendor import Vendor
 from backend.models.purchase_order import PurchaseOrder
 

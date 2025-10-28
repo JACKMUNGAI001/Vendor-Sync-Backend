@@ -5,7 +5,7 @@ import cloudinary.uploader
 from backend.models.document import Document
 from backend.models.user import User
 from backend.models.purchase_order import PurchaseOrder
-from backend.app import db
+from backend import db
 from backend.config import Config
 import time
 

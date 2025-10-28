@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash
 from backend.models.user import User
 from backend.models.role import Role
-from backend.app import db
+from backend import db
 
 
 class UserResource(Resource):

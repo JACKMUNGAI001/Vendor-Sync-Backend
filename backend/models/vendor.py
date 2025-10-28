@@ -1,4 +1,4 @@
-from backend.app import db
+from backend import db
 
 class Vendor(db.Model):
     id = db.Column(db.Integer, primary_key=True)

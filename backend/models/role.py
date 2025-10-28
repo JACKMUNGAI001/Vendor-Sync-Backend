@@ -1,4 +1,4 @@
-from backend.app import db
+from backend import db
 
 class Role(db.Model):
     """Model representing a user role in the system."""

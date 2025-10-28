@@ -4,7 +4,7 @@ from backend.models.purchase_order import PurchaseOrder
 from backend.models.order_assignment import OrderAssignment
 from backend.models.user import User
 from backend.models.vendor import Vendor
-from backend.app import db
+from backend import db
 from sqlalchemy import or_, and_
 from datetime import datetime
 
