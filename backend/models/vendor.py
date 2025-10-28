@@ -1,4 +1,4 @@
-from app import db
+from backend.app import db
 
 class Vendor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,17 +10,17 @@ class Vendor(db.Model):
     state = db.Column(db.String(100))
     country = db.Column(db.String(100), default='USA')
     postal_code = db.Column(db.String(20))
-    business_type = db.Column(db.String(100))  # e.g., 'Construction Materials', 'Equipment Rental'
+    business_type = db.Column(db.String(100))
     description = db.Column(db.Text)
     is_approved = db.Column(db.Boolean, default=False)
-    tax_id = db.Column(db.String(100))  # Business tax ID/EIN
+    tax_id = db.Column(db.String(100))
     payment_terms = db.Column(db.String(100), default='Net 30')
-    rating = db.Column(db.Float, default=0.0)  # Average rating from orders
+    rating = db.Column(db.Float, default=0.0)
     total_orders = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-        def to_dict(self):
+    def to_dict(self):
         """Convert vendor object to dictionary for JSON serialization"""
         return {
             'id': self.id,
@@ -42,7 +42,7 @@ class Vendor(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
-    
+
     def to_dict_public(self):
         """Return vendor data for public viewing (without sensitive info)"""
         return {
@@ -62,11 +62,9 @@ class Vendor(db.Model):
     
     def update_rating(self, new_rating):
         """Update vendor rating (this would be called when new reviews come in)"""
-        # This is a simplified rating update - you might want a more complex system
         if self.rating == 0:
             self.rating = new_rating
         else:
-            # Simple average for demo purposes
             self.rating = (self.rating + new_rating) / 2
     
     def increment_orders(self):
