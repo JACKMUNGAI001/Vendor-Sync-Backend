@@ -1,7 +1,10 @@
+
 from backend import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
+    __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -13,7 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    role = db.relationship('Role')
+    role = db.relationship('Role', back_populates='users')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -39,4 +42,4 @@ class User(db.Model):
         return self.to_dict()
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f"<User {self.email}>"
