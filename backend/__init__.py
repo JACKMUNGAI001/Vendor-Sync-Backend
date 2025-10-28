@@ -29,7 +29,7 @@ def create_app():
     from backend.models.document import Document
     from backend.models.order_assignment import OrderAssignment
 
-    from backend.resources.auth import Login
+    from backend.resources.auth import Login, Register
     from backend.resources.user import UserResource
     from backend.resources.dashboard import Dashboard
     from backend.resources.order import OrderResource, OrderVendorResource, OrderAssignmentResource
@@ -38,11 +38,14 @@ def create_app():
     from backend.resources.search import SearchResource
 
     api.add_resource(Login, '/login')
+    api.add_resource(Register, '/register')
     api.add_resource(UserResource, '/users')
     api.add_resource(Dashboard, '/dashboard')
     api.add_resource(OrderResource, '/orders', '/orders/<int:id>')
     api.add_resource(OrderVendorResource, '/orders/vendor')
-    api.add_resource(OrderAssignmentResource, '/order-assignments', '/order-assignments/<int:assignment_id>')
+    api.add_resource(OrderAssignmentResource,
+                     '/order-assignments',
+                     '/order-assignments/<int:assignment_id>')
     api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
     api.add_resource(DocumentResource, '/documents')
     api.add_resource(SearchResource, '/search')

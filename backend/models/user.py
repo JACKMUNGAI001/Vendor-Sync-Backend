@@ -1,5 +1,4 @@
 from backend import db
-from backend.models.role import Role
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
@@ -14,7 +13,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    role = db.relationship('Role', backref='users')
+    role = db.relationship('Role')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
