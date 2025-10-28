@@ -1,6 +1,6 @@
-from app import db
-from models.user import User
-from models.vendor import Vendor
+from backend.app import db
+from backend.models.user import User
+from backend.models.vendor import Vendor
 from datetime import datetime
 
 class PurchaseOrder(db.Model):
