@@ -1,5 +1,5 @@
-from app import db
-from models.role import Role
+from backend.app import db
+from backend.models.role import Role
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
@@ -14,7 +14,6 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    # Relationships
     role = db.relationship('Role', backref='users')
     
     def set_password(self, password):
@@ -43,7 +42,6 @@ class User(db.Model):
     def to_dict_secure(self):
         """Return user data without sensitive information"""
         data = self.to_dict()
-        # Remove any sensitive fields if needed
         return data
     
     def __repr__(self):
