@@ -1,6 +1,6 @@
-from app import db
-from models.vendor import Vendor
-from models.purchase_order import PurchaseOrder
+from backend.app import db
+from backend.models.vendor import Vendor
+from backend.models.purchase_order import PurchaseOrder
 
 class Quote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
