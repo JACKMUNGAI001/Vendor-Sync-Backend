@@ -40,7 +40,7 @@ class DocumentResource(Resource):
         }
 
         signature = cloudinary.utils.api_sign_request(
-            params_to_sign=params,
+            params,
             api_secret=Config.CLOUDINARY_API_SECRET
         )
 
