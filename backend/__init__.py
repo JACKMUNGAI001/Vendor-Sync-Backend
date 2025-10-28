@@ -9,7 +9,6 @@ from backend.config import Config
 db = SQLAlchemy()
 ma = Marshmallow()
 jwt = JWTManager()
-api = Api()
 
 def create_app():
     app = Flask(__name__)
@@ -19,16 +18,8 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     jwt.init_app(app)
-    api.init_app(app)
 
-    from backend.models.role import Role
-    from backend.models.user import User
-    from backend.models.vendor import Vendor
-    from backend.models.purchase_order import PurchaseOrder
-    from backend.models.quote import Quote
-    from backend.models.document import Document
-    from backend.models.order_assignment import OrderAssignment
-
+    from backend.models import role, user, vendor, purchase_order, quote, document, order_assignment
     from backend.resources.auth import Login, Register
     from backend.resources.user import UserResource
     from backend.resources.dashboard import Dashboard
@@ -36,6 +27,8 @@ def create_app():
     from backend.resources.quote import QuoteResource
     from backend.resources.document import DocumentResource
     from backend.resources.search import SearchResource
+
+    api = Api(app)
 
     api.add_resource(Login, '/login')
     api.add_resource(Register, '/register')
@@ -62,4 +55,5 @@ def create_app():
     def expired_token_callback(jwt_header, jwt_payload):
         return {'message': 'Access token has expired'}, 401
 
+    print("Flask app fully ready with bound API routes")
     return app
