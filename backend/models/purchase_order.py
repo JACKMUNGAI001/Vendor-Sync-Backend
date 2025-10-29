@@ -14,7 +14,6 @@ class PurchaseOrder(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
     
-    # Relationships
     manager = db.relationship('User', backref='managed_orders')
     vendor = db.relationship('Vendor', backref='orders')
     
