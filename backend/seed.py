@@ -16,7 +16,8 @@ def seed_database():
             Role(name='staff'), 
             Role(name='vendor')
         ]
-        db.session.add_all(roles)
+        for role in roles:
+            db.session.add(role)
         db.session.commit()
         
         manager_role = Role.query.filter_by(name='manager').first()
@@ -49,10 +50,9 @@ def seed_database():
                 is_active=True
             )
         ]
-        db.session.add_all(users)
+        for user in users:
+            db.session.add(user)
         db.session.commit()
-        
-        vendor_user = User.query.filter_by(email='vendor@vendorsync.com').first()
         
         vendors = [
             Vendor(
@@ -82,7 +82,8 @@ def seed_database():
                 tax_id='TAX789012'
             )
         ]
-        db.session.add_all(vendors)
+        for vendor in vendors:
+            db.session.add(vendor)
         db.session.commit()
         
         print("Database seeded successfully!")
