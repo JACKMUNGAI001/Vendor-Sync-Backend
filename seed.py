@@ -71,6 +71,7 @@ def seed_database():
         db.session.commit()
         
         print("Database seeded successfully!")
+        print("Test accounts:")
         print("Manager: manager@vendorsync.com / password123")
         print("Staff: staff@vendorsync.com / password123") 
         print("Vendor: vendor@vendorsync.com / password123")

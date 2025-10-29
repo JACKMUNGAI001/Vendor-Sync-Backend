@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import create_access_token
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from backend.models.user import User
 from backend.models.role import Role
 from backend import db
@@ -30,7 +30,7 @@ class Login(Resource):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'role': user.role.name if user.role else 'unknown'
+                'role': user.role.name if user.role else 'user'
             }
         }, 200
 
@@ -50,9 +50,7 @@ class Register(Resource):
 
         vendor_role = Role.query.filter_by(name='vendor').first()
         if not vendor_role:
-            vendor_role = Role(name='vendor')
-            db.session.add(vendor_role)
-            db.session.commit()
+            return {'message': 'Vendor role not found in system'}, 500
 
         user = User(
             email=args['email'],
@@ -67,20 +65,7 @@ class Register(Resource):
         try:
             db.session.add(user)
             db.session.commit()
-            
-            token = create_access_token(identity=user.id)
-            return {
-                'message': 'User registered successfully',
-                'token': token,
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'role': 'vendor'
-                }
-            }, 201
-            
+            return {'message': 'User registered successfully'}, 201
         except Exception as e:
             db.session.rollback()
             return {'message': f'Registration failed: {str(e)}'}, 500
