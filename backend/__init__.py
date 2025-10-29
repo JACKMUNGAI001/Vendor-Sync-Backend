@@ -14,35 +14,23 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app)
 
     db.init_app(app)
     ma.init_app(app)
     jwt.init_app(app)
 
     from backend.resources.auth import Login, Register
-    from backend.resources.user import UserResource
     from backend.resources.dashboard import Dashboard
-    from backend.resources.order import OrderResource, OrderVendorResource, OrderAssignmentResource
-    from backend.resources.quote import QuoteResource
-    from backend.resources.document import DocumentResource
-    from backend.resources.search import SearchResource
+    from backend.resources.order import OrderResource
     from backend.resources.vendor import VendorResource
 
     api = Api(app)
 
     api.add_resource(Login, '/login')
     api.add_resource(Register, '/register')
-    api.add_resource(UserResource, '/users')
     api.add_resource(Dashboard, '/dashboard')
     api.add_resource(OrderResource, '/orders', '/orders/<int:id>')
-    api.add_resource(OrderVendorResource, '/orders/vendor')
-    api.add_resource(OrderAssignmentResource,
-                     '/order-assignments',
-                     '/order-assignments/<int:assignment_id>')
-    api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
-    api.add_resource(DocumentResource, '/documents')
-    api.add_resource(SearchResource, '/search')
     api.add_resource(VendorResource, '/vendors')
 
     @jwt.unauthorized_loader
@@ -59,6 +47,15 @@ def create_app():
 
     @app.route('/')
     def index():
-        return "Vendor Sync Backend is running!"
+        return {
+            'message': 'VendorSync Backend is running!',
+            'endpoints': {
+                'login': '/login',
+                'register': '/register',
+                'dashboard': '/dashboard',
+                'orders': '/orders',
+                'vendors': '/vendors'
+            }
+        }
 
     return app

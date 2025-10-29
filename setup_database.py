@@ -4,25 +4,29 @@ from backend.models.user import User
 from backend.models.vendor import Vendor
 from werkzeug.security import generate_password_hash
 
-def seed_database():
+def setup_database():
     app = create_app()
     
     with app.app_context():
-        db.drop_all()
+        # Create all tables
         db.create_all()
         
+        # Create roles if they don't exist
         roles = ['manager', 'staff', 'vendor']
         for role_name in roles:
             if not Role.query.filter_by(name=role_name).first():
-                db.session.add(Role(name=role_name))
+                role = Role(name=role_name)
+                db.session.add(role)
         
         db.session.commit()
         
+        # Get roles
         manager_role = Role.query.filter_by(name='manager').first()
         staff_role = Role.query.filter_by(name='staff').first()
         vendor_role = Role.query.filter_by(name='vendor').first()
         
-        users = [
+        # Create test users
+        test_users = [
             {
                 'email': 'manager@vendorsync.com',
                 'password': 'password123',
@@ -32,7 +36,7 @@ def seed_database():
             },
             {
                 'email': 'staff@vendorsync.com',
-                'password': 'password123', 
+                'password': 'password123',
                 'first_name': 'Jane',
                 'last_name': 'Staff',
                 'role': staff_role
@@ -46,19 +50,21 @@ def seed_database():
             }
         ]
         
-        for user_data in users:
+        for user_data in test_users:
             if not User.query.filter_by(email=user_data['email']).first():
                 user = User(
                     email=user_data['email'],
                     password_hash=generate_password_hash(user_data['password']),
                     first_name=user_data['first_name'],
                     last_name=user_data['last_name'],
-                    role_id=user_data['role'].id
+                    role_id=user_data['role'].id,
+                    is_active=True
                 )
                 db.session.add(user)
         
         db.session.commit()
         
+        # Create test vendors
         vendors = [
             {
                 'name': 'ABC Construction Supplies',
@@ -85,11 +91,16 @@ def seed_database():
         
         db.session.commit()
         
-        print("Database seeded successfully!")
-        print("Test accounts:")
+        print("✅ Database setup completed successfully!")
+        print("\n📋 Test Accounts:")
         print("Manager: manager@vendorsync.com / password123")
-        print("Staff: staff@vendorsync.com / password123") 
+        print("Staff: staff@vendorsync.com / password123")
         print("Vendor: vendor@vendorsync.com / password123")
+        
+        print("\n🏪 Test Vendors:")
+        vendors = Vendor.query.all()
+        for vendor in vendors:
+            print(f"{vendor.name} - {vendor.contact_email}")
 
 if __name__ == '__main__':
-    seed_database()
+    setup_database()

@@ -12,10 +12,8 @@ class User(db.Model):
     phone = db.Column(db.String(20))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    role = db.relationship('Role', back_populates='users')
+    role = db.relationship('Role', backref='users')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -29,13 +27,5 @@ class User(db.Model):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'phone': self.phone,
-            'role': self.role.name if self.role else None,
-            'role_id': self.role_id,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'full_name': f"{self.first_name} {self.last_name}"
+            'role': self.role.name if self.role else None
         }
-
-    def __repr__(self):
-        return f"<User {self.email}>"

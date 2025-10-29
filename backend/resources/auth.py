@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import create_access_token
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from backend.models.user import User
 from backend.models.role import Role
 from backend import db
@@ -19,9 +19,6 @@ class Login(Resource):
         if not check_password_hash(user.password_hash, args['password']):
             return {'message': 'Invalid email or password'}, 401
 
-        if not user.is_active:
-            return {'message': 'Account is deactivated'}, 401
-
         token = create_access_token(identity=user.id)
         return {
             'token': token,
@@ -30,7 +27,7 @@ class Login(Resource):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'role': user.role.name if user.role else 'user'
+                'role': user.role.name
             }
         }, 200
 
@@ -50,7 +47,7 @@ class Register(Resource):
 
         vendor_role = Role.query.filter_by(name='vendor').first()
         if not vendor_role:
-            return {'message': 'Vendor role not found in system'}, 500
+            return {'message': 'Default role not found'}, 500
 
         user = User(
             email=args['email'],
@@ -62,10 +59,6 @@ class Register(Resource):
             is_active=True
         )
 
-        try:
-            db.session.add(user)
-            db.session.commit()
-            return {'message': 'User registered successfully'}, 201
-        except Exception as e:
-            db.session.rollback()
-            return {'message': f'Registration failed: {str(e)}'}, 500
+        db.session.add(user)
+        db.session.commit()
+        return {'message': 'User registered successfully'}, 201
