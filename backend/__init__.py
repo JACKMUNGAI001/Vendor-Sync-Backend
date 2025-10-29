@@ -55,5 +55,9 @@ def create_app():
     def expired_token_callback(jwt_header, jwt_payload):
         return {'message': 'Access token has expired'}, 401
 
+    @app.route('/')
+    def index():
+        return "Vendor Sync Backend is running!"
+
     print("Flask app fully ready with bound API routes")
     return app
