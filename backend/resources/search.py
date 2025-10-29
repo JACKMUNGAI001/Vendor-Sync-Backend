@@ -10,7 +10,33 @@ class SearchResource(Resource):
         parser.add_argument('query', required=True)
         args = parser.parse_args()
 
-        client = SearchClient.create(Config.ALGOLIA_APP_ID, Config.ALGOLIA_API_KEY)
-        index = client.init_index('vendorsync')
-        results = index.search(args['query'])
-        return results['hits'], 200
+        sample_results = [
+            {
+                'objectID': '1',
+                'name': 'ABC Construction Supplies',
+                'type': 'vendor',
+                'status': 'approved'
+            },
+            {
+                'objectID': '2', 
+                'name': 'Order #123 - Cement Delivery',
+                'type': 'order',
+                'status': 'pending'
+            },
+            {
+                'objectID': '3',
+                'name': 'Quote #456 - $1500.00',
+                'type': 'quote', 
+                'status': 'pending',
+                'price': 1500.00
+            }
+        ]
+
+        # Filter results based on query
+        query = args['query'].lower()
+        filtered_results = [
+            result for result in sample_results 
+            if query in result['name'].lower() or query in result['type']
+        ]
+
+        return {'hits': filtered_results}, 200

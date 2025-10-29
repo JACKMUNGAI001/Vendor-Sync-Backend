@@ -33,7 +33,8 @@ def create_app():
 
     from backend.resources.auth import Login, Register
     from backend.resources.dashboard import Dashboard
-    from backend.resources.order import OrderResource, OrderAssignmentResource
+    from backend.resources.order import OrderResource
+    from backend.resources.order_assignment import OrderAssignmentResource
     from backend.resources.quote import QuoteResource
     from backend.resources.vendor import VendorResource
     from backend.resources.document import DocumentResource
@@ -72,6 +73,7 @@ def create_app():
                 'register': '/register',
                 'dashboard': '/dashboard',
                 'orders': '/orders',
+                'order-assignments': '/order-assignments',
                 'quotes': '/quotes',
                 'vendors': '/vendors',
                 'documents': '/documents',

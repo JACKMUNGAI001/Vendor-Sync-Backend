@@ -42,6 +42,10 @@ class OrderAssignmentResource(Resource):
         if not staff or staff.role.name != 'staff':
             return {'message': 'Invalid staff member'}, 400
 
+        existing = OrderAssignment.query.filter_by(order_id=args['order_id'], staff_id=args['staff_id']).first()
+        if existing:
+            return {'message': 'Order already assigned to this staff member'}, 400
+
         assignment = OrderAssignment(
             order_id=args['order_id'],
             staff_id=args['staff_id'],
