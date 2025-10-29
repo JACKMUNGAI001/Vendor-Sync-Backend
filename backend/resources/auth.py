@@ -52,7 +52,6 @@ class Register(Resource):
             first_name=args['first_name'],
             last_name=args['last_name'],
             phone=args.get('phone'),
-            company_name=args.get('company_name'),
             role_id=default_role.id,
             is_active=True
         )
