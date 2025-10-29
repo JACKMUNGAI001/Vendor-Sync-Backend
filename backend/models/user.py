@@ -16,8 +16,6 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
     role = db.relationship('Role', back_populates='users')
-    assigned_orders = db.relationship('OrderAssignment', back_populates='staff', foreign_keys='OrderAssignment.staff_id')
-    managed_orders = db.relationship('PurchaseOrder', back_populates='manager', foreign_keys='PurchaseOrder.manager_id')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
