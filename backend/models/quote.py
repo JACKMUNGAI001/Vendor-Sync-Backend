@@ -24,8 +24,7 @@ class Quote(db.Model):
             'status': self.status,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'vendor_name': self.vendor.name if self.vendor else None,
+            'order_details': self.order.to_dict() if self.order else None
         }
-
-    def __repr__(self):
-        return f'<Quote {self.id} - ${self.price} - {self.status}>'

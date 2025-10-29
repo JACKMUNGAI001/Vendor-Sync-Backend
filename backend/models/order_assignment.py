@@ -9,19 +9,16 @@ class OrderAssignment(db.Model):
     assigned_at = db.Column(db.DateTime, server_default=db.func.now())
     notes = db.Column(db.Text)
 
-    __table_args__ = (db.UniqueConstraint('order_id', 'staff_id', name='unique_order_staff'),)
-    
     order = db.relationship('PurchaseOrder', foreign_keys=[order_id])
     staff = db.relationship('User', foreign_keys=[staff_id])
-    
+
     def to_dict(self):
         return {
             'id': self.id,
             'order_id': self.order_id,
             'staff_id': self.staff_id,
             'assigned_at': self.assigned_at.isoformat() if self.assigned_at else None,
-            'notes': self.notes
+            'notes': self.notes,
+            'order_details': self.order.to_dict() if self.order else None,
+            'staff_name': f"{self.staff.first_name} {self.staff.last_name}" if self.staff else None
         }
-    
-    def __repr__(self):
-        return f'<OrderAssignment Order:{self.order_id} Staff:{self.staff_id}>'

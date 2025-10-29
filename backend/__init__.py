@@ -33,8 +33,11 @@ def create_app():
 
     from backend.resources.auth import Login, Register
     from backend.resources.dashboard import Dashboard
-    from backend.resources.order import OrderResource
+    from backend.resources.order import OrderResource, OrderAssignmentResource
+    from backend.resources.quote import QuoteResource
     from backend.resources.vendor import VendorResource
+    from backend.resources.document import DocumentResource
+    from backend.resources.search import SearchResource
 
     api = Api(app)
 
@@ -42,7 +45,11 @@ def create_app():
     api.add_resource(Register, '/register')
     api.add_resource(Dashboard, '/dashboard')
     api.add_resource(OrderResource, '/orders', '/orders/<int:id>')
+    api.add_resource(OrderAssignmentResource, '/order-assignments')
+    api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
     api.add_resource(VendorResource, '/vendors')
+    api.add_resource(DocumentResource, '/documents')
+    api.add_resource(SearchResource, '/search')
 
     @jwt.unauthorized_loader
     def missing_token_callback(error):
@@ -65,7 +72,10 @@ def create_app():
                 'register': '/register',
                 'dashboard': '/dashboard',
                 'orders': '/orders',
-                'vendors': '/vendors'
+                'quotes': '/quotes',
+                'vendors': '/vendors',
+                'documents': '/documents',
+                'search': '/search'
             }
         }
 
