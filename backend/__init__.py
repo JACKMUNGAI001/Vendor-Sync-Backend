@@ -14,13 +14,12 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, resources={r"/*": {"origins": ["https://wondrous-twilight-609097.netlify.app"]}})
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     db.init_app(app)
     ma.init_app(app)
     jwt.init_app(app)
 
-    from backend.models import role, user, vendor, purchase_order, quote, document, order_assignment
     from backend.resources.auth import Login, Register
     from backend.resources.user import UserResource
     from backend.resources.dashboard import Dashboard
@@ -28,6 +27,7 @@ def create_app():
     from backend.resources.quote import QuoteResource
     from backend.resources.document import DocumentResource
     from backend.resources.search import SearchResource
+    from backend.resources.vendor import VendorResource
 
     api = Api(app)
 
@@ -43,6 +43,7 @@ def create_app():
     api.add_resource(QuoteResource, '/quotes', '/quotes/<int:id>')
     api.add_resource(DocumentResource, '/documents')
     api.add_resource(SearchResource, '/search')
+    api.add_resource(VendorResource, '/vendors')
 
     @jwt.unauthorized_loader
     def missing_token_callback(error):
@@ -60,5 +61,4 @@ def create_app():
     def index():
         return "Vendor Sync Backend is running!"
 
-    print("Flask app fully ready with bound API routes")
     return app
