@@ -27,4 +27,3 @@ class OrderAssignment(db.Model):
     
     def __repr__(self):
         return f'<OrderAssignment Order:{self.order_id} Staff:{self.staff_id}>'
-    
