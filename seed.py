@@ -16,8 +16,7 @@ def seed_database():
             Role(name='staff'), 
             Role(name='vendor')
         ]
-        for role in roles:
-            db.session.add(role)
+        db.session.add_all(roles)
         db.session.commit()
         
         manager_role = Role.query.filter_by(name='manager').first()
@@ -50,8 +49,7 @@ def seed_database():
                 is_active=True
             )
         ]
-        for user in users:
-            db.session.add(user)
+        db.session.add_all(users)
         db.session.commit()
         
         vendors = [
@@ -67,23 +65,9 @@ def seed_database():
                 description='Leading supplier of construction materials',
                 is_approved=True,
                 tax_id='TAX123456'
-            ),
-            Vendor(
-                name='BuildMax Hardware',
-                contact_email='info@buildmax.com', 
-                contact_phone='+254723456789',
-                address='456 Industrial Area',
-                city='Nairobi',
-                state='Nairobi', 
-                country='Kenya',
-                business_type='Hardware Supplies',
-                description='Quality hardware and tools',
-                is_approved=True,
-                tax_id='TAX789012'
             )
         ]
-        for vendor in vendors:
-            db.session.add(vendor)
+        db.session.add_all(vendors)
         db.session.commit()
         
         print("Database seeded successfully!")
