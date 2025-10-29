@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.models.user import User
 from backend.models.role import Role
@@ -17,7 +17,6 @@ class Login(Resource):
             return {'message': 'Invalid credentials'}, 401
 
         token = create_access_token(identity=user.id)
-
         return {
             'token': token,
             'user': {
@@ -37,14 +36,15 @@ class Register(Resource):
         parser.add_argument('first_name', required=True, help="First name is required")
         parser.add_argument('last_name', required=True, help="Last name is required")
         parser.add_argument('phone', required=False)
+        parser.add_argument('company_name', required=False)
         args = parser.parse_args()
 
         if User.query.filter_by(email=args['email']).first():
             return {'message': 'Email already exists'}, 400
 
-        role = Role.query.filter_by(name='Vendor').first()
-        if not role:
-            return {'message': 'Default role not found'}, 400
+        default_role = Role.query.filter_by(name='Vendor').first()
+        if not default_role:
+            return {'message': 'Default role Vendor not found'}, 500
 
         user = User(
             email=args['email'],
@@ -52,11 +52,11 @@ class Register(Resource):
             first_name=args['first_name'],
             last_name=args['last_name'],
             phone=args.get('phone'),
-            role_id=role.id,
+            company_name=args.get('company_name'),
+            role_id=default_role.id,
             is_active=True
         )
 
         db.session.add(user)
         db.session.commit()
-
         return {'message': 'User registered successfully'}, 201
