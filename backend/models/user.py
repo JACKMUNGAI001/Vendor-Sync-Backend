@@ -18,6 +18,7 @@ class User(db.Model):
     role = db.relationship('Role', back_populates='users')
     managed_orders = db.relationship('PurchaseOrder', backref='manager', foreign_keys='PurchaseOrder.manager_id')
     assignments = db.relationship('OrderAssignment', backref='staff', foreign_keys='OrderAssignment.staff_id')
+    vendor_quotes = db.relationship('Quote', backref='vendor_user', foreign_keys='Quote.vendor_id')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
