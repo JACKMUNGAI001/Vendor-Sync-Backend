@@ -13,7 +13,7 @@ class PurchaseOrder(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    quotes = db.relationship('Quote', backref='order', foreign_keys='Quote.order_id')
+    quotes = db.relationship('Quote', back_populates='order', foreign_keys='Quote.order_id')
     assignments = db.relationship('OrderAssignment', backref='order', foreign_keys='OrderAssignment.order_id')
 
     def to_dict(self):

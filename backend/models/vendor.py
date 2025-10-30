@@ -4,6 +4,7 @@ class Vendor(db.Model):
     __tablename__ = 'vendor'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     contact_email = db.Column(db.String(255), unique=True, nullable=False)
     contact_phone = db.Column(db.String(20))
@@ -22,12 +23,13 @@ class Vendor(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    orders = db.relationship('PurchaseOrder', backref='vendor', foreign_keys='PurchaseOrder.vendor_id')
-    quotes = db.relationship('Quote', backref='vendor', foreign_keys='Quote.vendor_id')
-
+    user = db.relationship('User', backref='vendor_profile', uselist=False)
+    quotes = db.relationship('Quote', back_populates='vendor', foreign_keys='Quote.vendor_id')
+    
     def to_dict(self):
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'name': self.name,
             'contact_email': self.contact_email,
             'contact_phone': self.contact_phone,
@@ -48,4 +50,4 @@ class Vendor(db.Model):
         }
 
     def __repr__(self):
-        return f'<Vendor {self.name} - {self.contact_email}>'
+        return f'<Vendor {self.name} ({self.contact_email})>'

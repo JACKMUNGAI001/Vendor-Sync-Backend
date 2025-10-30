@@ -12,6 +12,9 @@ class Quote(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
+    vendor = db.relationship('Vendor', back_populates='quotes')
+    order = db.relationship('PurchaseOrder', back_populates='quotes')
+
     def to_dict(self):
         return {
             'id': self.id,

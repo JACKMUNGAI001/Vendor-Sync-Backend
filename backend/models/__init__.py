@@ -1,3 +1,17 @@
-"""Backend models package."""
+from backend import db
 
-__all__ = []
+from .user import User, Role
+from .vendor import Vendor
+from .purchase_order import PurchaseOrder
+from .quote import Quote
+from .order_assignment import OrderAssignment
+
+__all__ = [
+    "db",
+    "User",
+    "Role",
+    "Vendor",
+    "PurchaseOrder",
+    "Quote",
+    "OrderAssignment",
+]
