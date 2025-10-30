@@ -1,6 +1,6 @@
 from backend import db
 
-from .user import User, Role
+from .user import User, user
 from .vendor import Vendor
 from .purchase_order import PurchaseOrder
 from .quote import Quote
