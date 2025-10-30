@@ -13,11 +13,8 @@ class Login(Resource):
         args = parser.parse_args()
 
         user = User.query.filter_by(email=args['email']).first()
-        if not user:
-            return {'message': 'Invalid email or password'}, 401
-
-        if not check_password_hash(user.password_hash, args['password']):
-            return {'message': 'Invalid email or password'}, 401
+        if not user or not check_password_hash(user.password_hash, args['password']):
+            return {'message': 'Invalid credentials'}, 401
 
         token = create_access_token(identity=user.id)
         return {
@@ -47,7 +44,7 @@ class Register(Resource):
 
         vendor_role = Role.query.filter_by(name='vendor').first()
         if not vendor_role:
-            return {'message': 'Default role not found'}, 500
+            return {'message': 'Vendor role not found'}, 500
 
         user = User(
             email=args['email'],
@@ -61,4 +58,16 @@ class Register(Resource):
 
         db.session.add(user)
         db.session.commit()
-        return {'message': 'User registered successfully'}, 201
+        
+        token = create_access_token(identity=user.id)
+        return {
+            'message': 'User registered successfully',
+            'token': token,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role.name
+            }
+        }, 201

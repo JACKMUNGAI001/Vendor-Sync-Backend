@@ -12,9 +12,6 @@ class Quote(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    vendor = db.relationship('Vendor', foreign_keys=[vendor_id])
-    order = db.relationship('PurchaseOrder', foreign_keys=[order_id])
-
     def to_dict(self):
         return {
             'id': self.id,
@@ -26,5 +23,8 @@ class Quote(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'vendor_name': self.vendor.name if self.vendor else None,
-            'order_details': self.order.to_dict() if self.order else None
+            'order_status': self.order.status if self.order else None
         }
+
+    def __repr__(self):
+        return f'<Quote {self.id} - ${self.price} - {self.status}>'
