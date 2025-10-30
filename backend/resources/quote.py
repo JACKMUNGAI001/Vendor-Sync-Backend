@@ -3,7 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.models.quote import Quote
 from backend.models.user import User
 from backend.models.purchase_order import PurchaseOrder
+from backend.models.vendor import Vendor
 from backend import db
+# from backend.services.email_service import email_service # Temporarily commented out
 
 class QuoteResource(Resource):
     @jwt_required()
@@ -40,6 +42,14 @@ class QuoteResource(Resource):
         try:
             db.session.add(quote)
             db.session.commit()
+
+            # Send email to manager # Temporarily commented out
+            # manager = User.query.get(order.manager_id)
+            # if manager:
+            #     subject = f"New Quote Submitted for Order #{order.id}"
+            #     html_content = f"<p>Dear {manager.first_name},</p>\n<p>A new quote has been submitted by {user.first_name} {user.last_name} for Order #{order.id}.</p>\n<p>Quote Price: ${quote.price}</p>\n<p>Notes: {quote.notes}</p>\n<p>Please review the quote in VendorSync.</p>"
+            #     email_service.send_email(manager.email, subject, html_content)
+
             return {
                 'message': 'Quote submitted successfully',
                 'quote': quote.to_dict()
@@ -59,7 +69,7 @@ class QuoteResource(Resource):
             if not quote:
                 return {'message': 'Quote not found'}, 404
             
-            if user.role.name == 'vendor' and quote.vendor_id != user.id:
+            if user.role.name == 'vendor' and quote.vendor.id != user.id:
                 return {'message': 'Access denied'}, 403
             if user.role.name == 'manager' and quote.order.manager_id != user.id:
                 return {'message': 'Access denied'}, 403
@@ -118,10 +128,20 @@ class QuoteResource(Resource):
         if args['status'] not in valid_statuses:
             return {'message': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, 400
 
+        old_status = quote.status
         quote.status = args['status']
 
         try:
             db.session.commit()
+
+            # Send email to vendor if status changed # Temporarily commented out
+            # if old_status != quote.status:
+            #     vendor = Vendor.query.get(quote.vendor_id)
+            #     if vendor:
+            #         subject = f"Your Quote for Order #{quote.order.id} has been {quote.status.capitalize()}"
+            #         html_content = f"<p>Dear {vendor.name},</p>\n<p>Your quote for Order #{quote.order.id} has been <b>{quote.status}</b> by the manager.</p>\n<p>Please log in to VendorSync for more details.</p>"
+            #         email_service.send_email(vendor.email, subject, html_content)
+
             return {
                 'message': 'Quote updated successfully',
                 'quote': quote.to_dict()

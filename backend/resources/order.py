@@ -6,6 +6,7 @@ from backend.models.user import User
 from backend.models.vendor import Vendor
 from backend import db
 from datetime import datetime
+# from backend.services.email_service import email_service # Temporarily commented out
 
 class OrderResource(Resource):
     @jwt_required()
@@ -70,33 +71,19 @@ class OrderResource(Resource):
             return {'message': 'Only procurement managers can create orders'}, 403
 
         parser = reqparse.RequestParser()
-        parser.add_argument('material_list', type=dict, required=True, help='Material list is required')
+        parser.add_argument('order_number', type=str, required=True, help='Order number is required')
         parser.add_argument('vendor_id', type=int, required=True, help='Vendor ID is required')
-        parser.add_argument('delivery_date', type=str)
-        parser.add_argument('special_instructions', type=str)
         args = parser.parse_args()
 
         vendor = Vendor.query.get(args['vendor_id'])
         if not vendor:
             return {'message': 'Vendor not found'}, 404
 
-        if not isinstance(args['material_list'], dict) or not args['material_list']:
-            return {'message': 'Material list must be a non-empty object'}, 400
-
-        delivery_date = None
-        if args['delivery_date']:
-            try:
-                delivery_date = datetime.fromisoformat(args['delivery_date'].replace('Z', '+00:00'))
-            except ValueError:
-                return {'message': 'Invalid delivery date format'}, 400
-
         order = PurchaseOrder(
+            order_number=args['order_number'],
             manager_id=user.id,
             vendor_id=args['vendor_id'],
-            material_list=args['material_list'],
-            status='pending',
-            delivery_date=delivery_date,
-            special_instructions=args['special_instructions']
+            status='pending'
         )
 
         try:
@@ -131,8 +118,6 @@ class OrderResource(Resource):
 
         parser = reqparse.RequestParser()
         parser.add_argument('status', type=str)
-        parser.add_argument('special_instructions', type=str)
-        parser.add_argument('delivery_date', type=str)
         args = parser.parse_args()
 
         if args['status']:
@@ -140,15 +125,6 @@ class OrderResource(Resource):
             if args['status'] not in valid_statuses:
                 return {'message': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, 400
             order.status = args['status']
-
-        if args['special_instructions'] is not None:
-            order.special_instructions = args['special_instructions']
-
-        if args['delivery_date']:
-            try:
-                order.delivery_date = datetime.fromisoformat(args['delivery_date'].replace('Z', '+00:00'))
-            except ValueError:
-                return {'message': 'Invalid delivery date format'}, 400
 
         try:
             db.session.commit()
@@ -255,6 +231,12 @@ class OrderAssignmentResource(Resource):
         try:
             db.session.add(assignment)
             db.session.commit()
+
+            # Send email to staff member # Temporarily commented out
+            # subject = f"New Order Assignment: Order #{order.order_number}"
+            # html_content = f"<p>Dear {staff.first_name},</p>\n<p>You have been assigned to a new order: <b>Order #{order.order_number}</b>.</p>\n<p>Please log in to VendorSync to view the details and update its status.</p>"
+            # email_service.send_email(staff.email, subject, html_content)
+
             return {
                 'message': 'Order assigned successfully',
                 'assignment': assignment.to_dict()

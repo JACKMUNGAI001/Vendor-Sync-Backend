@@ -10,6 +10,8 @@ class Document(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
+    order = db.relationship('PurchaseOrder', back_populates='documents')
+
     def to_dict(self):
         return {
             'id': self.id,

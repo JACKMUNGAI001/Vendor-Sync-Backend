@@ -4,13 +4,15 @@ from backend.models.document import Document
 from backend.models.user import User
 from backend.models.purchase_order import PurchaseOrder
 from backend import db
+from werkzeug.datastructures import FileStorage
+# from backend.services.cloudinary_service import cloudinary_service # Temporarily commented out
 
 class DocumentResource(Resource):
     @jwt_required()
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('order_id', type=int, required=True, help='Order ID is required')
-        parser.add_argument('file_url', type=str, required=True, help='File URL is required')
+        parser.add_argument('file', type=FileStorage, location='files', required=True, help='File is required')
         parser.add_argument('file_type', type=str, required=True, help='File type is required')
         args = parser.parse_args()
 
@@ -27,9 +29,15 @@ class DocumentResource(Resource):
         if user.role.name == 'staff' and not any(assignment.staff_id == user.id for assignment in order.assignments):
             return {'message': 'Access denied'}, 403
 
+        # uploaded_file_url = cloudinary_service.upload_file(args['file'].stream, folder="vendorsync_documents") # Temporarily commented out
+        uploaded_file_url = "http://example.com/placeholder.pdf" # Placeholder for now
+
+        if not uploaded_file_url:
+            return {'message': 'Failed to upload file. Cloudinary integration is temporarily disabled.'}, 500
+
         document = Document(
             order_id=args['order_id'],
-            file_url=args['file_url'],
+            file_url=uploaded_file_url,
             file_type=args['file_type'],
             uploaded_by=user.id
         )

@@ -1,4 +1,6 @@
 from backend import db
+from flask import current_app
+from sqlalchemy import event
 
 class Quote(db.Model):
     __tablename__ = 'quote'
@@ -15,8 +17,11 @@ class Quote(db.Model):
     vendor = db.relationship('Vendor', back_populates='quotes')
     order = db.relationship('PurchaseOrder', back_populates='quotes')
 
+    __searchable__ = ['notes', 'status']
+
     def to_dict(self):
         return {
+            'objectID': self.id,
             'id': self.id,
             'vendor_id': self.vendor_id,
             'order_id': self.order_id,
@@ -31,3 +36,24 @@ class Quote(db.Model):
 
     def __repr__(self):
         return f'<Quote {self.id} - ${self.price} - {self.status}>'
+
+# Algolia Indexing Callbacks
+
+def _get_algolia_service():
+    from backend.services.algolia_service import algolia_service
+    return algolia_service
+
+@event.listens_for(Quote, 'after_insert')
+def new_quote_to_algolia(mapper, connection, target):
+    if current_app.config.get('ALGOLIA_ENABLED', False):
+        _get_algolia_service().add_record(target.to_dict())
+
+@event.listens_for(Quote, 'after_update')
+def update_quote_in_algolia(mapper, connection, target):
+    if current_app.config.get('ALGOLIA_ENABLED', False):
+        _get_algolia_service().update_record(target.to_dict())
+
+@event.listens_for(Quote, 'after_delete')
+def delete_quote_from_algolia(mapper, connection, target):
+    if current_app.config.get('ALGOLIA_ENABLED', False):
+        _get_algolia_service().delete_record(target.id)

@@ -16,8 +16,23 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
     role = db.relationship('Role', back_populates='users')
-    managed_orders = db.relationship('PurchaseOrder', backref='manager', foreign_keys='PurchaseOrder.manager_id')
-    assignments = db.relationship('OrderAssignment', backref='staff', foreign_keys='OrderAssignment.staff_id')
+
+    # Use lambda to defer evaluation of dependent models
+    managed_orders = db.relationship(
+        lambda: __import__('backend.models.purchase_order', fromlist=['PurchaseOrder']).PurchaseOrder,
+        back_populates='manager',
+        foreign_keys=lambda: __import__('backend.models.purchase_order', fromlist=['PurchaseOrder']).PurchaseOrder.manager_id
+    )
+    assignments = db.relationship(
+        lambda: __import__('backend.models.order_assignment', fromlist=['OrderAssignment']).OrderAssignment,
+        back_populates='staff',
+        foreign_keys=lambda: __import__('backend.models.order_assignment', fromlist=['OrderAssignment']).OrderAssignment.staff_id
+    )
+    requirements = db.relationship(
+        lambda: __import__('backend.models.requirement', fromlist=['Requirement']).Requirement,
+        back_populates='manager',
+        foreign_keys=lambda: __import__('backend.models.requirement', fromlist=['Requirement']).Requirement.manager_id
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
