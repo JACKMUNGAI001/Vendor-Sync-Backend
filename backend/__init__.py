@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Blueprint
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
@@ -12,12 +12,15 @@ ma = Marshmallow()
 jwt = JWTManager()
 migrate = Migrate()
 
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": "https://wondrous-twilight-609097.netlify.app"}},
+        supports_credentials=True
+    )
 
     db.init_app(app)
     ma.init_app(app)
@@ -39,21 +42,21 @@ def create_app():
 
     api = Api(app)
 
-    api.add_resource(Login, "/login")
-    api.add_resource(Register, "/register")
-    api.add_resource(UserResource, "/users")
-    api.add_resource(Dashboard, "/dashboard")
-    api.add_resource(OrderResource, "/orders", "/orders/<int:id>")
-    api.add_resource(OrderVendorResource, "/orders/vendor")
+    api.add_resource(Login, "/api/login")
+    api.add_resource(Register, "/api/register")
+    api.add_resource(UserResource, "/api/users")
+    api.add_resource(Dashboard, "/api/dashboard")
+    api.add_resource(OrderResource, "/api/orders", "/api/orders/<int:id>")
+    api.add_resource(OrderVendorResource, "/api/orders/vendor")
     api.add_resource(
         OrderAssignmentResource,
-        "/order-assignments",
-        "/order-assignments/<int:assignment_id>",
+        "/api/order-assignments",
+        "/api/order-assignments/<int:assignment_id>",
     )
-    api.add_resource(QuoteResource, "/quotes", "/quotes/<int:id>")
-    api.add_resource(DocumentResource, "/documents")
-    api.add_resource(SearchResource, "/search")
-    api.add_resource(VendorResource, "/vendors")
+    api.add_resource(QuoteResource, "/api/quotes", "/api/quotes/<int:id>")
+    api.add_resource(DocumentResource, "/api/documents")
+    api.add_resource(SearchResource, "/api/search")
+    api.add_resource(VendorResource, "/api/vendors")
 
     @jwt.unauthorized_loader
     def missing_token_callback(error):
