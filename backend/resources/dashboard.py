@@ -15,6 +15,9 @@ class Dashboard(Resource):
         if not user:
             return {'message': 'User not found'}, 404
 
+        print(f"User role name: {user.role.name}")
+        print(f"User role ID: {user.role_id}")
+
         data = []
 
         try:
