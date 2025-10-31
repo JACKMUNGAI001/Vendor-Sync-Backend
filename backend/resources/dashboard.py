@@ -6,15 +6,9 @@ from backend.models.order_assignment import OrderAssignment
 from backend.models.quote import Quote
 
 class Dashboard(Resource):
-    @jwt_required()
     def get(self):
-        print(f"Dashboard resource hit! User ID: {user_id}")
-        try:
-            user_id = get_jwt_identity()
-            user = User.query.get(user_id)
-            
-            if not user:
-                return {'message': 'User not found'}, 404
+        print("Dashboard resource hit! (JWT temporarily disabled)")
+        return {"message": "Dashboard data (dummy response)", "data": []}, 200
 
             data = []
 
