@@ -8,7 +8,7 @@ Flask-SQLAlchemy==3.0.5
 marshmallow==3.20.1
 marshmallow-sqlalchemy==0.30.0
 SQLAlchemy==1.4.48
-psycopg2-binary==2.9.6
+psycopg2==2.9.10
 python-dotenv==1.0.0
 click==8.1.8
 Jinja2==3.1.6
