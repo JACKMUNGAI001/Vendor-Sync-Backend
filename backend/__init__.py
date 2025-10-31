@@ -70,4 +70,13 @@ def create_app():
     def health_check():
         return jsonify({"status": "ok", "message": "Backend running successfully"}), 200
 
+    from backend.db_seed import seed_roles, seed_users, seed_vendors
+
+    @app.route("/api/seed-db")
+    def seed_db():
+        seed_roles()
+        seed_users()
+        seed_vendors()
+        return jsonify({"message": "Database seeded successfully"}), 200
+
     return app
