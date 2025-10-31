@@ -8,9 +8,6 @@ from backend.models.quote import Quote
 class Dashboard(Resource):
     @jwt_required()
     def get(self):
-class Dashboard(Resource):
-    @jwt_required()
-    def get(self):
         user_id = get_jwt_identity()
         print(f"Dashboard resource hit! User ID: {user_id}")
         user = User.query.get(user_id)
