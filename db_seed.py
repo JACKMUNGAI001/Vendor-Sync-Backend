@@ -20,7 +20,7 @@ def seed_users():
             last_name='Manager',
             role=manager_role
         )
-        manager.set_password('password')
+        manager.set_password('password123')
         db.session.add(manager)
 
     if not User.query.filter_by(email='staff@example.com').first():
@@ -31,7 +31,7 @@ def seed_users():
             last_name='Staff',
             role=staff_role
         )
-        staff.set_password('password')
+        staff.set_password('password123')
         db.session.add(staff)
 
     if not User.query.filter_by(email='vendor@example.com').first():
@@ -42,7 +42,7 @@ def seed_users():
             last_name='Vendor',
             role=vendor_role
         )
-        vendor_user.set_password('password')
+        vendor_user.set_password('password123')
         db.session.add(vendor_user)
 
     db.session.commit()
