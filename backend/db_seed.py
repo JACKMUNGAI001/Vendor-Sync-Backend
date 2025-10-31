@@ -26,6 +26,9 @@ def seed_users():
         )
         manager.set_password('password123')
         db.session.add(manager)
+        db.session.flush() # Ensure manager object has an ID before accessing role_id
+        print(f"Manager role ID from object: {manager_role.id}")
+        print(f"Manager user role ID: {manager.role_id}")
 
     if not User.query.filter_by(email='staff@example.com').first():
         staff_role = Role.query.filter_by(name='staff').first()
