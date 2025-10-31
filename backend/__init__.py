@@ -74,9 +74,12 @@ def create_app():
 
     class SeedDB(Resource):
         def get(self):
+            db.drop_all()
+            db.create_all()
             seed_roles()
             seed_users()
             seed_vendors()
+            seed_data()
             return {"message": "Database seeded successfully"}, 200
 
     api.add_resource(SeedDB, "/api/seed-db")
