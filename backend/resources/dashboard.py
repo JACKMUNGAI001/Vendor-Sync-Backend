@@ -8,7 +8,7 @@ from backend.models.quote import Quote
 class Dashboard(Resource):
     @jwt_required()
     def get(self):
-        print("Dashboard resource hit!")
+        print(f"Dashboard resource hit! User ID: {user_id}")
         try:
             user_id = get_jwt_identity()
             user = User.query.get(user_id)
@@ -51,7 +51,7 @@ class Dashboard(Resource):
                 order_data = [
                     {
                         'id': order.id,
-                        'description': f'Order #{order.id} - {order.status}',
+                        'description': f'Order #{order.id}',
                         'type': 'order',
                         'status': order.status
                     }
@@ -61,7 +61,7 @@ class Dashboard(Resource):
                 quote_data = [
                     {
                         'id': quote.id,
-                        'description': f'Quote #{quote.id} - ${float(quote.price) if quote.price else 0} - {quote.status}',
+                        'description': f'Quote #{quote.id}',
                         'type': 'quote', 
                         'status': quote.status,
                         'price': float(quote.price) if quote.price else 0
@@ -74,6 +74,7 @@ class Dashboard(Resource):
             else:
                 return {'message': 'Invalid role'}, 400
 
+            print(f"Dashboard data returned: {data}")
             return data, 200
 
         except Exception as e:
