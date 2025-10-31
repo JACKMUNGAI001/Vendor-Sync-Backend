@@ -72,11 +72,13 @@ def create_app():
 
     from backend.db_seed import seed_roles, seed_users, seed_vendors
 
-    @app.route("/api/seed-db")
-    def seed_db():
-        seed_roles()
-        seed_users()
-        seed_vendors()
-        return jsonify({"message": "Database seeded successfully"}), 200
+    class SeedDB(Resource):
+        def get(self):
+            seed_roles()
+            seed_users()
+            seed_vendors()
+            return {"message": "Database seeded successfully"}, 200
+
+    api.add_resource(SeedDB, "/api/seed-db")
 
     return app
