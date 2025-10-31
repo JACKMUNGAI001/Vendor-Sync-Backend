@@ -16,13 +16,16 @@ def seed_roles():
     db.session.commit()
 
 def seed_users():
+    manager_role = Role.query.filter_by(name='manager').first()
+    staff_role = Role.query.filter_by(name='staff').first()
+    vendor_role = Role.query.filter_by(name='vendor').first()
+
     if not User.query.filter_by(email='manager@example.com').first():
-        manager_role = Role.query.filter_by(name='manager').first()
         manager = User(
             email='manager@example.com',
             first_name='Default',
             last_name='Manager',
-            role=manager_role
+            role_id=manager_role.id if manager_role else None
         )
         manager.set_password('password123')
         db.session.add(manager)
@@ -31,23 +34,21 @@ def seed_users():
         print(f"Manager user role ID: {manager.role_id}")
 
     if not User.query.filter_by(email='staff@example.com').first():
-        staff_role = Role.query.filter_by(name='staff').first()
         staff = User(
             email='staff@example.com',
             first_name='Default',
             last_name='Staff',
-            role=staff_role
+            role_id=staff_role.id if staff_role else None
         )
         staff.set_password('password123')
         db.session.add(staff)
 
     if not User.query.filter_by(email='vendor@example.com').first():
-        vendor_role = Role.query.filter_by(name='vendor').first()
         vendor_user = User(
             email='vendor@example.com',
             first_name='Default',
             last_name='Vendor',
-            role=vendor_role
+            role_id=vendor_role.id if vendor_role else None
         )
         vendor_user.set_password('password123')
         db.session.add(vendor_user)

@@ -10,7 +10,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20))
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False, default=3)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
