@@ -12,7 +12,12 @@ class Login(Resource):
         parser.add_argument('password', required=True, help="Password is required")
         args = parser.parse_args()
 
+        print(f"Received email: {args['email']}")
+        print(f"Received password: {args['password']}")
+
         user = User.query.filter_by(email=args['email']).first()
+        print(f"User object: {user}")
+
         if not user or not check_password_hash(user.password_hash, args['password']):
             return {'message': 'Invalid credentials'}, 401
 
