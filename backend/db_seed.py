@@ -2,6 +2,10 @@ from backend import create_app, db
 from backend.models.user import User
 from backend.models.role import Role
 from backend.models.vendor import Vendor
+from backend.models.purchase_order import PurchaseOrder
+from backend.models.requirement import Requirement
+from backend.models.quote import Quote
+from datetime import datetime, timedelta
 
 def seed_roles():
     roles = ['manager', 'staff', 'vendor']
@@ -61,6 +65,68 @@ def seed_vendors():
         db.session.add(vendor)
         db.session.commit()
 
+def seed_data():
+    manager = User.query.filter_by(email='manager@example.com').first()
+    staff = User.query.filter_by(email='staff@example.com').first()
+    vendor = Vendor.query.filter_by(name='Default Vendor').first()
+
+    if manager and staff and vendor:
+        # Seed Requirements
+        if not Requirement.query.filter_by(item_name='Steel Rods - Grade 60').first():
+            req1 = Requirement(
+                item_name='Steel Rods - Grade 60',
+                quantity=1000,
+                specifications='High-strength steel rods for construction',
+                manager_id=manager.id
+            )
+            db.session.add(req1)
+
+        if not Requirement.query.filter_by(item_name='Cement - Type I Portland').first():
+            req2 = Requirement(
+                item_name='Cement - Type I Portland',
+                quantity=500,
+                specifications='Standard Portland cement',
+                manager_id=manager.id
+            )
+            db.session.add(req2)
+        db.session.commit()
+
+        # Seed Purchase Orders
+        if not PurchaseOrder.query.filter_by(order_number='PO-2025-001').first():
+            po1 = PurchaseOrder(
+                order_number='PO-2025-001',
+                status='pending',
+                manager_id=manager.id,
+                vendor_id=vendor.id,
+                created_at=datetime.now() - timedelta(days=5)
+            )
+            db.session.add(po1)
+
+        if not PurchaseOrder.query.filter_by(order_number='PO-2025-002').first():
+            po2 = PurchaseOrder(
+                order_number='PO-2025-002',
+                status='in progress',
+                manager_id=manager.id,
+                vendor_id=vendor.id,
+                created_at=datetime.now() - timedelta(days=2)
+            )
+            db.session.add(po2)
+        db.session.commit()
+
+        # Seed Quotes
+        if not Quote.query.filter_by(order_id=po1.id, vendor_id=vendor.id).first():
+            quote1 = Quote(
+                vendor_id=vendor.id,
+                order_id=po1.id,
+                price=45000.00,
+                status='pending',
+                notes='Includes 7-day delivery',
+                created_at=datetime.now() - timedelta(days=4)
+            )
+            db.session.add(quote1)
+        db.session.commit()
+
+
 if __name__ == '__main__':
     app = create_app()
     with app.app_context():
@@ -68,4 +134,5 @@ if __name__ == '__main__':
         seed_roles()
         seed_users()
         seed_vendors()
+        seed_data()
         print("Database seeded successfully.")
