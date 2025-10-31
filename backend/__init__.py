@@ -74,13 +74,25 @@ def create_app():
 
     class SeedDB(Resource):
         def get(self):
-            db.drop_all()
-            db.create_all()
-            seed_roles()
-            seed_users()
-            seed_vendors()
-            seed_data()
-            return {"message": "Database seeded successfully"}, 200
+            try:
+                print("Starting database seeding...")
+                print("Dropping all tables...")
+                db.drop_all()
+                print("Creating all tables...")
+                db.create_all()
+                print("Seeding roles...")
+                seed_roles()
+                print("Seeding users...")
+                seed_users()
+                print("Seeding vendors...")
+                seed_vendors()
+                print("Seeding data...")
+                seed_data()
+                print("Database seeding complete.")
+                return {"message": "Database seeded successfully"}, 200
+            except Exception as e:
+                print(f"Error during seeding: {str(e)}")
+                return {"message": f"Error during seeding: {str(e)}"}, 500
 
     api.add_resource(SeedDB, "/api/seed-db")
 
