@@ -76,10 +76,8 @@ def create_app():
         def get(self):
             try:
                 print("Starting database seeding...")
-                print("Dropping all tables...")
-                db.drop_all()
-                print("Creating all tables...")
-                db.create_all()
+                # db.drop_all() # Removed for debugging
+                # db.create_all() # Removed for debugging
                 print("Seeding roles...")
                 seed_roles()
                 print("Seeding users...")
