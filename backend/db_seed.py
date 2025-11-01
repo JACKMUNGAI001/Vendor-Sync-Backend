@@ -93,7 +93,8 @@ def seed_data():
         db.session.commit()
 
         # Seed Purchase Orders
-        if not PurchaseOrder.query.filter_by(order_number='PO-2025-001').first():
+        po1 = PurchaseOrder.query.filter_by(order_number='PO-2025-001').first()
+        if not po1:
             po1 = PurchaseOrder(
                 order_number='PO-2025-001',
                 status='pending',
@@ -103,7 +104,8 @@ def seed_data():
             )
             db.session.add(po1)
 
-        if not PurchaseOrder.query.filter_by(order_number='PO-2025-002').first():
+        po2 = PurchaseOrder.query.filter_by(order_number='PO-2025-002').first()
+        if not po2:
             po2 = PurchaseOrder(
                 order_number='PO-2025-002',
                 status='in progress',
