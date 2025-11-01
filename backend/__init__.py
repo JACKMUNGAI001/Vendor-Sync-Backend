@@ -70,7 +70,7 @@ def create_app():
     def health_check():
         return jsonify({"status": "ok", "message": "Backend running successfully"}), 200
 
-    from backend.db_seed import seed_roles, seed_users, seed_vendors
+    from backend.db_seed import seed_roles, seed_users, seed_vendors, seed_data
 
     class SeedDB(Resource):
         def get(self):
