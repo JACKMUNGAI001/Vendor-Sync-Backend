@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -6,32 +8,33 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_migrate import Migrate
 from backend.config import Config
-# from backend.services.cloudinary_service import cloudinary_service # Temporarily commented out
-# from backend.services.email_service import EmailService # Temporarily commented out
-# from backend.services.algolia_service import AlgoliaService # Temporarily commented out
 
 db = SQLAlchemy()
 ma = Marshmallow()
 jwt = JWTManager()
 migrate = Migrate()
-# cloudinary_service = CloudinaryService() # Temporarily commented out
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     db.init_app(app)
     ma.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    # Initialize email_service after app is configured # Temporarily commented out
-    # app.email_service = EmailService() # Temporarily commented out
-
-    # Initialize algolia_service after app is configured # Temporarily commented out
-    # app.algolia_service = AlgoliaService() # Temporarily commented out
+    from backend.models import (
+        User, Vendor, Role, Requirement, VendorCategory,
+        PurchaseOrder, OrderAssignment, Document, Quote
+    )
 
     from backend.resources.auth import Login, Register
     from backend.resources.dashboard import Dashboard
@@ -50,7 +53,7 @@ def create_app():
     api.add_resource(Login, "/api/login")
     api.add_resource(Register, "/api/register")
     api.add_resource(Dashboard, "/api/dashboard")
-    api.add_resource(DocumentResource, "/api/documents")
+    api.add_resource(DocumentResource, "/api/documents", "/api/documents/<int:id>")
     api.add_resource(OrderResource, "/api/orders", "/api/orders/<int:id>")
     api.add_resource(OrderAssignmentResource, "/api/order-assignments", "/api/order-assignments/<int:assignment_id>")
     api.add_resource(OrderVendorResource, "/api/vendor-orders")
@@ -65,37 +68,71 @@ def create_app():
 
     @app.route("/")
     def index():
-        return "Vendor Sync Backend is running!"
+        return jsonify({
+            "message": "VendorSync API is running!",
+            "version": "1.0.0",
+            "endpoints": {
+                "health": "/api/health",
+                "login": "/api/login",
+                "register": "/api/register",
+                "dashboard": "/api/dashboard",
+                "seed": "/api/seed-db"
+            }
+        }), 200
 
     @app.route("/api/health")
     def health_check():
-        return jsonify({"status": "ok", "message": "Backend running successfully"}), 200
-
-    from backend.db_seed import seed_roles, seed_users, seed_vendors, seed_data
+        return jsonify({
+            "status": "ok",
+            "message": "Backend running successfully",
+            "database": "connected"
+        }), 200
 
     class SeedDB(Resource):
         def get(self):
             try:
+                from backend.db_seed import seed_all
+                
                 print("Starting database seeding...")
-                # Explicitly delete all users and roles to ensure a clean slate
-                db.session.query(User).delete()
-                db.session.query(Role).delete()
-                db.session.commit()
-
-                print("Seeding roles...")
-                seed_roles()
-                print("Seeding users...")
-                seed_users()
-                print("Seeding vendors...")
-                seed_vendors()
-                print("Seeding data...")
-                seed_data()
-                print("Database seeding complete.")
-                return {"message": "Database seeded successfully"}, 200
+                
+                seed_all()
+                
+                return {
+                    "message": "Database seeded successfully",
+                    "credentials": {
+                        "manager": "manager@example.com / password123",
+                        "staff": "staff@example.com / password123",
+                        "vendor": "vendor@example.com / password123"
+                    }
+                }, 200
             except Exception as e:
+                db.session.rollback()
                 print(f"Error during seeding: {str(e)}")
-                return {"message": f"Error during seeding: {str(e)}"}, 500
+                return {
+                    "message": f"Error during seeding: {str(e)}"
+                }, 500
 
     api.add_resource(SeedDB, "/api/seed-db")
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'message': 'Token has expired',
+            'error': 'token_expired'
+        }), 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        return jsonify({
+            'message': 'Invalid token',
+            'error': 'invalid_token'
+        }), 401
+
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):
+        return jsonify({
+            'message': 'Authorization token is missing',
+            'error': 'authorization_required'
+        }), 401
 
     return app

@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.models.user import User
 from backend.models.role import Role
+from backend.models.vendor import Vendor
 from backend import db
 
 class Login(Resource):
@@ -13,8 +14,18 @@ class Login(Resource):
         args = parser.parse_args()
 
         user = User.query.filter_by(email=args['email']).first()
+        
+        if not user:
+            return {'message': 'Invalid email or password'}, 401
+        
+        if not user.check_password(args['password']):
+            return {'message': 'Invalid email or password'}, 401
+        
+        if not user.is_active:
+            return {'message': 'Account is inactive. Please contact administrator.'}, 403
 
         token = create_access_token(identity=str(user.id))
+        
         return {
             'token': token,
             'user': {
@@ -22,9 +33,11 @@ class Login(Resource):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'role': user.role.name
+                'role': user.role.name,
+                'role_id': user.role_id
             }
         }, 200
+
 
 class Register(Resource):
     def post(self):
@@ -35,6 +48,8 @@ class Register(Resource):
         parser.add_argument('last_name', required=True, help="Last name is required")
         parser.add_argument('phone', required=False)
         parser.add_argument('company_name', required=False)
+        parser.add_argument('address', required=False)
+        parser.add_argument('contact_person', required=False)
         args = parser.parse_args()
 
         if User.query.filter_by(email=args['email']).first():
@@ -42,7 +57,7 @@ class Register(Resource):
 
         vendor_role = Role.query.filter_by(name='vendor').first()
         if not vendor_role:
-            return {'message': 'Vendor role not found'}, 500
+            return {'message': 'Vendor role not found. Please contact administrator.'}, 500
 
         user = User(
             email=args['email'],
@@ -54,18 +69,37 @@ class Register(Resource):
             is_active=True
         )
 
-        db.session.add(user)
-        db.session.commit()
-        
-        token = create_access_token(identity=user.id)
-        return {
-            'message': 'User registered successfully',
-            'token': token,
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role.name
-            }
-        }, 201
+        try:
+            db.session.add(user)
+            db.session.flush()
+
+            vendor = Vendor(
+                name=f"{args['first_name']} {args['last_name']}",
+                email=args['email'],
+                phone=args.get('phone'),
+                address=args.get('address'),
+                company_name=args.get('company_name', f"{args['first_name']} {args['last_name']} Co."),
+                contact_person=f"{args['first_name']} {args['last_name']}",
+                is_verified=False
+            )
+            db.session.add(vendor)
+            db.session.commit()
+            
+            token = create_access_token(identity=str(user.id))
+            
+            return {
+                'message': 'Vendor registered successfully. Awaiting manager approval.',
+                'token': token,
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'role': user.role.name,
+                    'role_id': user.role_id,
+                    'is_verified': False
+                }
+            }, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'message': f'Registration failed: {str(e)}'}, 500
