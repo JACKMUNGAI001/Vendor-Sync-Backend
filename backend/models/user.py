@@ -1,5 +1,4 @@
 from backend.database import db
-from backend.models.role import Role
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
@@ -14,8 +13,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
-    # Relationships
-    role = db.relationship('Role', backref='users')
+    # Relationships will be added later to avoid circular imports
     
     def set_password(self, password):
         """Hash and set the user's password"""
@@ -33,7 +31,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone': self.phone,
-            'role': self.role.name if self.role else None,
+            'role': 'user',
             'role_id': self.role_id,
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -47,5 +45,5 @@ class User(db.Model):
         return data
     
     def __repr__(self):
-        return f'<User {self.email} - {self.role.name if self.role else "No Role"}>'
+        return f'<User {self.email}>'
     
