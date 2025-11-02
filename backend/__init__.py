@@ -39,7 +39,7 @@ def create_app():
     from backend.resources.order import OrderResource, OrderAssignmentResource, OrderVendorResource
     from backend.resources.quote import QuoteResource
     from backend.resources.search import SearchResource
-    from backend.resources.user import UserResource
+    from backend.resources.user import UserResource, CheckUserRole
     from backend.resources.vendor import VendorResource
     from backend.resources.requirement import RequirementResource
     from backend.resources.vendor_category import VendorCategoryResource
@@ -61,6 +61,7 @@ def create_app():
     api.add_resource(RequirementResource, "/api/requirements", "/api/requirements/<int:id>")
     api.add_resource(VendorCategoryResource, "/api/vendor-categories", "/api/vendor-categories/<int:id>")
     api.add_resource(RoleResource, "/api/roles")
+    api.add_resource(CheckUserRole, "/api/check-user-role/<int:user_id>")
 
     @app.route("/")
     def index():
@@ -76,8 +77,11 @@ def create_app():
         def get(self):
             try:
                 print("Starting database seeding...")
-                # db.drop_all() # Removed for debugging
-                # db.create_all() # Removed for debugging
+                # Explicitly delete all users and roles to ensure a clean slate
+                db.session.query(User).delete()
+                db.session.query(Role).delete()
+                db.session.commit()
+
                 print("Seeding roles...")
                 seed_roles()
                 print("Seeding users...")

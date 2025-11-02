@@ -107,3 +107,24 @@ class UserResource(Resource):
         db.session.commit()
 
         return {'message': 'User deleted successfully'}, 200
+
+
+class CheckUserRole(Resource):
+    def get(self, user_id):
+        query = """
+            SELECT users.id, users.username, roles.name AS role_name, roles.id AS role_id
+            FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.id = :user_id
+        """
+        result = db.session.execute(query, {'user_id': user_id}).fetchone()
+
+        if result:
+            return {
+                'user_id': result.id,
+                'username': result.username,
+                'role_name': result.role_name,
+                'role_id': result.role_id
+            }, 200
+        else:
+            return {'message': 'User not found'}, 404
