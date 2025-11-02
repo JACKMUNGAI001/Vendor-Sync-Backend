@@ -1,39 +1,79 @@
-from flask import Flask
+from flask import Flask, request, make_response
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
+from backend.database import db
 
 # Import your resources
-from resources.auth import Login
-from resources.user import UserResource
-from resources.dashboard import Dashboard
-from resources.order import OrderResource, OrderVendorResource, OrderAssignmentResource  # Add these
-from resources.quote import QuoteResource
-from resources.document import DocumentResource
-from resources.search import SearchResource
-from config import Config
+from backend.resources.auth import Login
+from backend.resources.user import UserResource
+from backend.resources.dashboard import Dashboard
+from backend.resources.order import OrderResource, OrderVendorResource, OrderAssignmentResource  # Add these
+from backend.resources.quote import QuoteResource
+from backend.resources.document import DocumentResource
+from backend.resources.search import SearchResource
+from backend.config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
-db = SQLAlchemy(app)
+db.init_app(app)
 ma = Marshmallow(app)
 api = Api(app)
 jwt = JWTManager(app)
-CORS(app)  # Enable CORS for frontend
+
+# Configure CORS with more permissive settings for development
+app.config['CORS_HEADERS'] = 'Content-Type, Authorization'
+app.config['CORS_SUPPORTS_CREDENTIALS'] = True
+app.config['CORS_ORIGINS'] = '*'  # Allow all origins in development
+
+# Initialize CORS with more permissive settings
+cors = CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": "*",  # Allow all origins
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+            "allow_headers": ["*"],  # Allow all headers
+            "expose_headers": ["Content-Range", "X-Content-Range", "Authorization"],
+            "supports_credentials": True,
+            "max_age": 600  # 10 minutes
+        }
+    }
+)
+
+# Handle preflight requests
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "*")
+        response.headers.add("Access-Control-Allow-Methods", "*")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    response.headers.add('Access-Control-Max-Age', '600')
+    return response
 
 # Import models (important for db.create_all())
-from models.role import Role
-from models.user import User
-from models.vendor import Vendor
-from models.purchase_order import PurchaseOrder  # Add this
-from models.quote import Quote
-from models.document import Document
-from models.order_assignment import OrderAssignment  # Add this
+from backend.models.role import Role
+from backend.models.user import User
+from backend.models.vendor import Vendor
+from backend.models.purchase_order import PurchaseOrder  # Add this
+from backend.models.quote import Quote
+from backend.models.document import Document
+from backend.models.order_assignment import OrderAssignment  # Add this
 
 # Add your endpoints
-api.add_resource(Login, '/login')
+api.add_resource(Login, '/auth/login')
 api.add_resource(UserResource, '/users')
 api.add_resource(Dashboard, '/dashboard')
 api.add_resource(OrderResource, '/orders', '/orders/<int:id>')  # Your endpoints

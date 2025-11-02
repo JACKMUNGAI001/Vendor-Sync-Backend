@@ -1,5 +1,5 @@
-from app import db
-from models.role import Role
+from backend.database import db
+from backend.models.role import Role
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
