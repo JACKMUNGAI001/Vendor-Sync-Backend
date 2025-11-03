@@ -47,6 +47,7 @@ class Register(Resource):
         parser.add_argument('first_name', required=True, help="First name is required")
         parser.add_argument('last_name', required=True, help="Last name is required")
         parser.add_argument('phone', required=False)
+        parser.add_argument('role', required=True, help="Role is required")
         parser.add_argument('company_name', required=False)
         parser.add_argument('address', required=False)
         parser.add_argument('contact_person', required=False)
@@ -55,9 +56,13 @@ class Register(Resource):
         if User.query.filter_by(email=args['email']).first():
             return {'message': 'Email already exists'}, 400
 
-        vendor_role = Role.query.filter_by(name='vendor').first()
-        if not vendor_role:
-            return {'message': 'Vendor role not found. Please contact administrator.'}, 500
+        role_name = args['role'].lower()
+        if role_name not in ['manager', 'staff', 'vendor']:
+            return {'message': 'Invalid role. Must be manager, staff, or vendor'}, 400
+
+        role = Role.query.filter_by(name=role_name).first()
+        if not role:
+            return {'message': f'{role_name.capitalize()} role not found. Please contact administrator.'}, 500
 
         user = User(
             email=args['email'],
@@ -65,7 +70,7 @@ class Register(Resource):
             first_name=args['first_name'],
             last_name=args['last_name'],
             phone=args.get('phone'),
-            role_id=vendor_role.id,
+            role_id=role.id,
             is_active=True
         )
 
@@ -73,22 +78,28 @@ class Register(Resource):
             db.session.add(user)
             db.session.flush()
 
-            vendor = Vendor(
-                name=f"{args['first_name']} {args['last_name']}",
-                email=args['email'],
-                phone=args.get('phone'),
-                address=args.get('address'),
-                company_name=args.get('company_name', f"{args['first_name']} {args['last_name']} Co."),
-                contact_person=f"{args['first_name']} {args['last_name']}",
-                is_verified=False
-            )
-            db.session.add(vendor)
+            if role_name == 'vendor':
+                vendor = Vendor(
+                    name=f"{args['first_name']} {args['last_name']}",
+                    email=args['email'],
+                    phone=args.get('phone'),
+                    address=args.get('address'),
+                    company_name=args.get('company_name', f"{args['first_name']} {args['last_name']} Co."),
+                    contact_person=args.get('contact_person', f"{args['first_name']} {args['last_name']}"),
+                    is_verified=False
+                )
+                db.session.add(vendor)
+            
             db.session.commit()
             
             token = create_access_token(identity=str(user.id))
             
+            message = 'Registration successful'
+            if role_name == 'vendor':
+                message = 'Vendor registered successfully. Awaiting manager approval.'
+            
             return {
-                'message': 'Vendor registered successfully. Awaiting manager approval.',
+                'message': message,
                 'token': token,
                 'user': {
                     'id': user.id,
@@ -97,7 +108,7 @@ class Register(Resource):
                     'last_name': user.last_name,
                     'role': user.role.name,
                     'role_id': user.role_id,
-                    'is_verified': False
+                    'is_verified': False if role_name == 'vendor' else True
                 }
             }, 201
         except Exception as e:
