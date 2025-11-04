@@ -1,10 +1,10 @@
 from dotenv import load_dotenv
 load_dotenv()
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from flask_migrate import Migrate
 from backend.config import Config
@@ -88,13 +88,40 @@ def create_app():
             "database": "connected"
         }), 200
 
+    # ✅ Get vendor verification status
+    @app.route('/api/vendor/status', methods=['GET'])
+    @jwt_required()
+    def get_vendor_status():
+        vendor = Vendor.query.filter_by(user_id=get_jwt_identity()).first()
+        return {'is_approved': vendor.is_approved if vendor else False}
+
+    # ✅ Create assignment
+    @app.route('/api/assignments', methods=['POST'])
+    @jwt_required()
+    def create_assignment():
+        data = request.get_json()
+        order_id = data.get('order_id')
+        vendor_id = data.get('vendor_id')
+
+        if not order_id or not vendor_id:
+            return jsonify({"message": "Missing order_id or vendor_id"}), 400
+
+        existing_assignment = OrderAssignment.query.filter_by(order_id=order_id, vendor_id=vendor_id).first()
+        if existing_assignment:
+            return jsonify({"message": "Assignment already exists"}), 400
+
+        assignment = OrderAssignment(order_id=order_id, vendor_id=vendor_id)
+        db.session.add(assignment)
+        db.session.commit()
+
+        return jsonify({"message": "Assignment created successfully", "assignment_id": assignment.id}), 201
+
     class SeedDB(Resource):
         def get(self):
             try:
                 from backend.db_seed import seed_all
                 
                 print("Starting database seeding...")
-                
                 seed_all()
                 
                 return {
